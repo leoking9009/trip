@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}운동 종목 추가 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> 새 운동 종목 추가</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">운동 이름 *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="form-text">예: 벤치프레스, 스쿼트, 데드리프트</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="body_part" class="form-label">운동 부위 *</label>
+                        <select class="form-select" id="body_part" name="body_part" required>
+                            <option value="">선택하세요</option>
+                            <option value="가슴">가슴</option>
+                            <option value="등">등</option>
+                            <option value="어깨">어깨</option>
+                            <option value="팔">팔</option>
+                            <option value="하체">하체</option>
+                            <option value="코어">코어</option>
+                            <option value="전신">전신</option>
+                            <option value="유산소">유산소</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="difficulty" class="form-label">난이도 *</label>
+                        <select class="form-select" id="difficulty" name="difficulty" required>
+                            <option value="">선택하세요</option>
+                            <option value="초급">초급 - 운동 입문자</option>
+                            <option value="중급">중급 - 어느 정도 경험 있음</option>
+                            <option value="고급">고급 - 숙련된 운동자</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">설명 (선택사항)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="운동 방법이나 주의사항을 입력하세요"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('exercises') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 추가하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 도움말 카드 -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> 운동 종목 추가 가이드</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>운동 부위별 예시</h6>
+                        <ul class="small">
+                            <li><strong>가슴:</strong> 벤치프레스, 푸시업, 플라이</li>
+                            <li><strong>등:</strong> 풀업, 로우, 데드리프트</li>
+                            <li><strong>어깨:</strong> 숄더프레스, 레터럴레이즈</li>
+                            <li><strong>팔:</strong> 바이셉컬, 트라이셉딥스</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>난이도 기준</h6>
+                        <ul class="small">
+                            <li><strong>초급:</strong> 자체 중량 운동, 기본 동작</li>
+                            <li><strong>중급:</strong> 웨이트 트레이닝, 복합 운동</li>
+                            <li><strong>고급:</strong> 고중량, 고난도 기술</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

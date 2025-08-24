@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}목표 추가 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> 새 운동 목표 설정</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">목표 제목 *</label>
+                        <input type="text" class="form-control" id="title" name="title" required
+                               placeholder="예: 주 3회 운동하기, 10kg 감량하기">
+                        <div class="form-text">구체적이고 명확한 목표를 설정하세요.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">목표 설명</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="목표에 대한 상세한 설명이나 동기를 입력하세요"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="goal_type" class="form-label">목표 기간 *</label>
+                            <select class="form-select" id="goal_type" name="goal_type" required>
+                                <option value="">선택하세요</option>
+                                <option value="weekly">주간 목표</option>
+                                <option value="monthly">월간 목표</option>
+                                <option value="yearly">연간 목표</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="target_date" class="form-label">목표 달성 날짜 *</label>
+                            <input type="date" class="form-control" id="target_date" name="target_date" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="target_value" class="form-label">목표 수치 *</label>
+                            <input type="number" class="form-control" id="target_value" name="target_value" 
+                                   step="0.1" required placeholder="예: 15, 3, 60">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="unit" class="form-label">단위 *</label>
+                            <select class="form-select" id="unit" name="unit" required>
+                                <option value="">선택하세요</option>
+                                <option value="회">회 (운동 횟수)</option>
+                                <option value="분">분 (운동 시간)</option>
+                                <option value="kg">kg (체중/무게)</option>
+                                <option value="km">km (거리)</option>
+                                <option value="일">일 (연속 일수)</option>
+                                <option value="세트">세트 (운동 세트)</option>
+                                <option value="개">개 (개수)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('goals') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 목표 설정
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 목표 설정 가이드 -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> SMART 목표 설정 가이드</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>좋은 목표의 예시</h6>
+                        <ul class="small">
+                            <li><strong>구체적:</strong> "주 3회 운동하기"</li>
+                            <li><strong>측정 가능:</strong> "5kg 감량하기"</li>
+                            <li><strong>달성 가능:</strong> "30일 연속 운동"</li>
+                            <li><strong>현실적:</strong> "월 16회 운동"</li>
+                            <li><strong>시간 제한:</strong> "3개월 내 달성"</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>목표 유형별 예시</h6>
+                        <ul class="small">
+                            <li><strong>빈도:</strong> 주 4회 운동하기</li>
+                            <li><strong>시간:</strong> 월 1200분 운동하기</li>
+                            <li><strong>체중:</strong> 3개월 내 5kg 감량</li>
+                            <li><strong>근력:</strong> 벤치프레스 80kg 달성</li>
+                            <li><strong>지구력:</strong> 5km 30분 내 완주</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 미리 설정된 목표 템플릿 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bookmark"></i> 인기 목표 템플릿</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-week text-primary fs-4"></i>
+                                <h6 class="mt-2">주 3회 운동</h6>
+                                <p class="small text-muted">규칙적인 운동 습관</p>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="applyTemplate('weekly', '주 3회 운동하기', 3, '회')">
+                                    적용하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="bi bi-arrow-down text-success fs-4"></i>
+                                <h6 class="mt-2">5kg 감량</h6>
+                                <p class="small text-muted">건강한 체중 관리</p>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="applyTemplate('monthly', '5kg 체중 감량하기', 5, 'kg')">
+                                    적용하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="bi bi-clock text-warning fs-4"></i>
+                                <h6 class="mt-2">월 20시간</h6>
+                                <p class="small text-muted">충분한 운동 시간</p>
+                                <button class="btn btn-sm btn-outline-warning" 
+                                        onclick="applyTemplate('monthly', '월 20시간 운동하기', 1200, '분')">
+                                    적용하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function applyTemplate(goalType, title, targetValue, unit) {
+    document.getElementById('goal_type').value = goalType;
+    document.getElementById('title').value = title;
+    document.getElementById('target_value').value = targetValue;
+    document.getElementById('unit').value = unit;
+    
+    // 목표 날짜 자동 설정
+    const today = new Date();
+    let targetDate = new Date(today);
+    
+    if (goalType === 'weekly') {
+        targetDate.setDate(today.getDate() + 7);
+    } else if (goalType === 'monthly') {
+        targetDate.setMonth(today.getMonth() + 1);
+    } else if (goalType === 'yearly') {
+        targetDate.setFullYear(today.getFullYear() + 1);
+    }
+    
+    document.getElementById('target_date').value = targetDate.toISOString().split('T')[0];
+}
+
+// 폼 유효성 검사
+document.querySelector('form').addEventListener('submit', function(e) {
+    const targetDate = new Date(document.getElementById('target_date').value);
+    const today = new Date();
+    
+    if (targetDate <= today) {
+        e.preventDefault();
+        alert('목표 날짜는 오늘 이후로 설정해주세요.');
+    }
+});
+
+// 목표 기간에 따른 권장 날짜 설정
+document.getElementById('goal_type').addEventListener('change', function() {
+    const goalType = this.value;
+    const today = new Date();
+    let suggestedDate = new Date(today);
+    
+    if (goalType === 'weekly') {
+        suggestedDate.setDate(today.getDate() + 7);
+    } else if (goalType === 'monthly') {
+        suggestedDate.setMonth(today.getMonth() + 1);
+    } else if (goalType === 'yearly') {
+        suggestedDate.setFullYear(today.getFullYear() + 1);
+    }
+    
+    if (goalType) {
+        document.getElementById('target_date').value = suggestedDate.toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %}

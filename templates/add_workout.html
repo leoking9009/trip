@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}운동 기록 추가 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> 새 운동 기록 추가</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="workoutForm">
+                    <!-- 기본 정보 -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">운동 날짜 *</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ today().strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="duration" class="form-label">총 운동 시간 (분)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" 
+                                   min="1" placeholder="예: 60">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="notes" class="form-label">메모</label>
+                            <input type="text" class="form-control" id="notes" name="notes" 
+                                   placeholder="오늘의 운동 소감">
+                        </div>
+                    </div>
+
+                    <!-- 운동 기록들 -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="bi bi-list-check"></i> 운동 기록</h5>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addExerciseRow()">
+                                <i class="bi bi-plus"></i> 운동 추가
+                            </button>
+                        </div>
+
+                        <div id="exerciseRows">
+                            <!-- 첫 번째 운동 기록 행 -->
+                            <div class="exercise-row border rounded p-3 mb-3">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label class="form-label">운동 종목</label>
+                                        <select class="form-select" name="exercise_id" onchange="updateFieldsForExercise(this)">
+                                            <option value="">선택하세요</option>
+                                            {% for exercise in exercises %}
+                                            <option value="{{ exercise.id }}" data-body-part="{{ exercise.body_part }}" data-name="{{ exercise.name }}">
+                                                {{ exercise.name }} ({{ exercise.body_part }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label class="form-label">세트</label>
+                                        <input type="number" class="form-control" name="sets" 
+                                               min="1" placeholder="3">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label class="form-label">횟수</label>
+                                        <input type="number" class="form-control" name="reps" 
+                                               min="1" placeholder="10">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">무게 (kg)</label>
+                                        <input type="number" class="form-control" name="weight" 
+                                               step="0.5" placeholder="20">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">시간 (분)</label>
+                                        <input type="number" class="form-control" name="exercise_duration" 
+                                               step="0.5" placeholder="30">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">거리 (km)</label>
+                                        <input type="number" class="form-control" name="distance" 
+                                               step="0.1" placeholder="5.0">
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                onclick="removeExerciseRow(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('workouts') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 기록 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 운동 템플릿 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bookmark"></i> 빠른 템플릿</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="loadTemplate('chest')">
+                            <i class="bi bi-heart"></i> 상체 운동
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="loadTemplate('cardio')">
+                            <i class="bi bi-bicycle"></i> 유산소 운동
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="loadTemplate('core')">
+                            <i class="bi bi-circle"></i> 코어 운동
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="loadTemplate('leg')">
+                            <i class="bi bi-person-walking"></i> 하체 운동
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let exerciseRowCount = 1;
+
+function addExerciseRow() {
+    const container = document.getElementById('exerciseRows');
+    const newRow = document.querySelector('.exercise-row').cloneNode(true);
+    
+    // 입력 필드 초기화
+    newRow.querySelectorAll('select, input').forEach(field => {
+        if (field.tagName === 'SELECT') {
+            field.selectedIndex = 0;
+        } else {
+            field.value = '';
+        }
+    });
+    
+    // 이벤트 리스너 재설정
+    const selectElement = newRow.querySelector('select[name="exercise_id"]');
+    selectElement.onchange = function() { updateFieldsForExercise(this); };
+    
+    container.appendChild(newRow);
+    exerciseRowCount++;
+}
+
+function updateFieldsForExercise(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const bodyPart = selectedOption.getAttribute('data-body-part');
+    const exerciseName = selectedOption.getAttribute('data-name');
+    const row = selectElement.closest('.exercise-row');
+    
+    // 필드들 가져오기
+    const setsField = row.querySelector('input[name="sets"]');
+    const repsField = row.querySelector('input[name="reps"]');
+    const weightField = row.querySelector('input[name="weight"]');
+    const durationField = row.querySelector('input[name="exercise_duration"]');
+    const distanceField = row.querySelector('input[name="distance"]');
+    
+    // 모든 필드를 일단 숨김
+    setsField.closest('.col-md-1').style.display = 'none';
+    repsField.closest('.col-md-1').style.display = 'none';
+    weightField.closest('.col-md-2').style.display = 'none';
+    durationField.closest('.col-md-2').style.display = 'none';
+    distanceField.closest('.col-md-2').style.display = 'none';
+    
+    // 운동별 맞춤 필드 표시
+    if (bodyPart === '유산소' || exerciseName === '만보걷기' || exerciseName === '실내자전거') {
+        // 유산소 운동: 시간 + 거리
+        durationField.closest('.col-md-2').style.display = 'block';
+        distanceField.closest('.col-md-2').style.display = 'block';
+        
+        if (exerciseName === '만보걷기') {
+            durationField.placeholder = '60';
+            distanceField.placeholder = '10.0';
+        } else if (exerciseName === '실내자전거') {
+            durationField.placeholder = '30';
+            distanceField.placeholder = '15.0';
+        }
+    } else if (exerciseName === '플랭크') {
+        // 플랭크: 횟수 + 시간만
+        repsField.closest('.col-md-1').style.display = 'block';
+        durationField.closest('.col-md-2').style.display = 'block';
+        
+        repsField.placeholder = '60';  // 초 단위로 입력
+        durationField.placeholder = '3';  // 총 플랭크 시간(분)
+        
+        // 레이블 변경
+        repsField.previousElementSibling.textContent = '시간(초)';
+    } else if (exerciseName === '팔굽혀펴기' || exerciseName === '스쿼트') {
+        // 팔굽혀펴기, 스쿼트: 세트 + 횟수만
+        setsField.closest('.col-md-1').style.display = 'block';
+        repsField.closest('.col-md-1').style.display = 'block';
+        
+        // 기본값 설정
+        if (exerciseName === '팔굽혀펴기') {
+            setsField.placeholder = '3';
+            repsField.placeholder = '15';
+        } else if (exerciseName === '스쿼트') {
+            setsField.placeholder = '4';
+            repsField.placeholder = '20';
+        }
+        
+        // 레이블 원복
+        repsField.previousElementSibling.textContent = '횟수';
+    } else {
+        // 기타 근력 운동: 세트 + 횟수 + 무게 + 시간
+        setsField.closest('.col-md-1').style.display = 'block';
+        repsField.closest('.col-md-1').style.display = 'block';
+        weightField.closest('.col-md-2').style.display = 'block';
+        durationField.closest('.col-md-2').style.display = 'block';
+        
+        // 기본값 설정
+        setsField.placeholder = '3';
+        repsField.placeholder = '10';
+        weightField.placeholder = '20';
+        durationField.placeholder = '5';
+        
+        // 레이블 원복
+        repsField.previousElementSibling.textContent = '횟수';
+    }
+}
+
+function removeExerciseRow(button) {
+    if (exerciseRowCount > 1) {
+        button.closest('.exercise-row').remove();
+        exerciseRowCount--;
+    } else {
+        alert('최소 하나의 운동은 입력해야 합니다.');
+    }
+}
+
+function loadTemplate(type) {
+    // 운동 템플릿 로드 (간단한 예시)
+    const templates = {
+        'chest': [
+            { exercise: '팔굽혀펴기', sets: 3, reps: 15 }  // 세트 + 횟수만
+        ],
+        'cardio': [
+            { exercise: '만보걷기', duration: 60, distance: 10.0 },    // 시간 + 거리
+            { exercise: '실내자전거', duration: 30, distance: 15.0 }   // 시간 + 거리
+        ],
+        'core': [
+            { exercise: '플랭크', reps: 60, duration: 3 }  // 시간(초) + 총 시간(분)
+        ],
+        'leg': [
+            { exercise: '스쿼트', sets: 4, reps: 20 }  // 세트 + 횟수만
+        ]
+    };
+    
+    alert(`${type} 운동 템플릿이 로드됩니다. (실제 구현에서는 폼에 자동 입력)`);
+}
+
+// 폼 제출 전 유효성 검사
+document.getElementById('workoutForm').addEventListener('submit', function(e) {
+    const exerciseRows = document.querySelectorAll('.exercise-row');
+    let hasValidExercise = false;
+    
+    exerciseRows.forEach(row => {
+        const exerciseSelect = row.querySelector('select[name="exercise_id"]');
+        if (exerciseSelect.value) {
+            hasValidExercise = true;
+        }
+    });
+    
+    if (!hasValidExercise) {
+        e.preventDefault();
+        alert('최소 하나의 운동을 선택해주세요.');
+    }
+});
+</script>
+{% endblock %}

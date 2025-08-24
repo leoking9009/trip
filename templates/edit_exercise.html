@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}운동 종목 수정 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-pencil"></i> 운동 종목 수정</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">운동 이름 *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ exercise.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="body_part" class="form-label">운동 부위 *</label>
+                        <select class="form-select" id="body_part" name="body_part" required>
+                            <option value="">선택하세요</option>
+                            <option value="가슴" {% if exercise.body_part == '가슴' %}selected{% endif %}>가슴</option>
+                            <option value="등" {% if exercise.body_part == '등' %}selected{% endif %}>등</option>
+                            <option value="어깨" {% if exercise.body_part == '어깨' %}selected{% endif %}>어깨</option>
+                            <option value="팔" {% if exercise.body_part == '팔' %}selected{% endif %}>팔</option>
+                            <option value="하체" {% if exercise.body_part == '하체' %}selected{% endif %}>하체</option>
+                            <option value="코어" {% if exercise.body_part == '코어' %}selected{% endif %}>코어</option>
+                            <option value="전신" {% if exercise.body_part == '전신' %}selected{% endif %}>전신</option>
+                            <option value="유산소" {% if exercise.body_part == '유산소' %}selected{% endif %}>유산소</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="difficulty" class="form-label">난이도 *</label>
+                        <select class="form-select" id="difficulty" name="difficulty" required>
+                            <option value="">선택하세요</option>
+                            <option value="초급" {% if exercise.difficulty == '초급' %}selected{% endif %}>초급 - 운동 입문자</option>
+                            <option value="중급" {% if exercise.difficulty == '중급' %}selected{% endif %}>중급 - 어느 정도 경험 있음</option>
+                            <option value="고급" {% if exercise.difficulty == '고급' %}selected{% endif %}>고급 - 숙련된 운동자</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">설명 (선택사항)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ exercise.description or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('exercises') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 수정하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 운동 기록 정보 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> 운동 기록 정보</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>생성일:</strong> {{ exercise.created_at.strftime('%Y년 %m월 %d일') }}</p>
+                        <p class="mb-1"><strong>총 운동 기록:</strong> {{ exercise.records|length }}회</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if exercise.records %}
+                        <p class="mb-1"><strong>최근 운동:</strong> 
+                            {{ exercise.records[-1].created_at.strftime('%Y년 %m월 %d일') }}
+                        </p>
+                        {% else %}
+                        <p class="mb-1 text-muted">아직 운동 기록이 없습니다</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

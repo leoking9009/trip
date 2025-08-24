@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}홈 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; margin-bottom: 2rem;">
+    <h1 class="display-4 fw-bold mb-3">
+        <i class="bi bi-activity"></i> 피트니스 트래커
+    </h1>
+    <p class="lead mb-4">체계적인 운동 관리로 건강한 삶을 만들어보세요</p>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+                            <div class="row g-3">
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('add_workout') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-plus-circle"></i><br>운동 기록
+                    </a>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-graph-up"></i><br>통계 보기
+                    </a>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('exercises') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-list-task"></i><br>운동 종목
+                    </a>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('weight_records') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-person-badge"></i><br>몸무게
+                    </a>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('goals') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-target"></i><br>목표 설정
+                    </a>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{{ url_for('calendar') }}" class="btn btn-light btn-lg w-100">
+                        <i class="bi bi-calendar3"></i><br>달력
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 최근 활동 -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> 최근 운동 기록</h5>
+            </div>
+            <div class="card-body">
+                <div id="recentWorkouts">
+                    <div class="d-flex align-items-center justify-content-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-calendar-plus fs-1"></i>
+                            <p class="mt-2">아직 운동 기록이 없습니다</p>
+                            <a href="{{ url_for('add_workout') }}" class="btn btn-primary">첫 운동 기록하기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 빠른 통계 -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm stats-card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">이번 주 운동</h6>
+                        <h3 class="mb-0">0회</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="bi bi-calendar-week fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm stats-card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">총 운동 시간</h6>
+                        <h3 class="mb-0">0분</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-stopwatch fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">등록된 운동</h6>
+                        <h3 class="mb-0">6개</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-list-ul fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 기능 소개 -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="text-center mb-4">주요 기능</h3>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-graph-up-arrow text-primary fs-1 mb-3"></i>
+                <h5>운동 통계</h5>
+                <p class="text-muted">주/월별 운동 패턴과 진행 상황을 한눈에 확인하세요</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-target text-success fs-1 mb-3"></i>
+                <h5>목표 설정</h5>
+                <p class="text-muted">개인 목표를 설정하고 달성 과정을 추적하세요</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-calendar3 text-info fs-1 mb-3"></i>
+                <h5>일정 관리</h5>
+                <p class="text-muted">달력을 통해 운동 계획을 체계적으로 관리하세요</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 text-center border-0 shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-clipboard-data text-warning fs-1 mb-3"></i>
+                <h5>상세 기록</h5>
+                <p class="text-muted">세트, 횟수, 무게 등 상세한 운동 데이터를 기록하세요</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

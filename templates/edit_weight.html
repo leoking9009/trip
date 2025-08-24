@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}몸무게 기록 수정 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-pencil"></i> 몸무게 기록 수정</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">측정 날짜 *</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ record.date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="weight" class="form-label">몸무게 (kg) *</label>
+                            <input type="number" class="form-control" id="weight" name="weight" 
+                                   step="0.1" min="20" max="300" required 
+                                   value="{{ record.weight }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="body_fat_percentage" class="form-label">체지방률 (%)</label>
+                            <input type="number" class="form-control" id="body_fat_percentage" 
+                                   name="body_fat_percentage" step="0.1" min="3" max="50" 
+                                   value="{{ record.body_fat_percentage or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="muscle_mass" class="form-label">근육량 (kg)</label>
+                            <input type="number" class="form-control" id="muscle_mass" 
+                                   name="muscle_mass" step="0.1" min="10" max="100" 
+                                   value="{{ record.muscle_mass or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">메모</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ record.notes or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('weight_records') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 수정 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 기록 정보 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> 기록 정보</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>등록일:</strong> {{ record.created_at.strftime('%Y년 %m월 %d일 %H:%M') }}</p>
+                        <p class="mb-1"><strong>기록 ID:</strong> #{{ record.id }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if record.weight %}
+                        {% set bmi = (record.weight / (1.78 * 1.78)) %}
+                        <p class="mb-1"><strong>BMI:</strong> {{ '{:.1f}'.format(bmi) }} (키 178cm 기준)</p>
+                        <p class="mb-1">
+                            <strong>분류:</strong> 
+                            {% if bmi < 18.5 %}
+                                <span class="badge bg-info">저체중</span>
+                            {% elif bmi < 23.0 %}
+                                <span class="badge bg-success">정상</span>
+                            {% elif bmi < 25.0 %}
+                                <span class="badge bg-warning">과체중</span>
+                            {% else %}
+                                <span class="badge bg-danger">비만</span>
+                            {% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 폼 유효성 검사 (add_weight.html과 동일)
+document.querySelector('form').addEventListener('submit', function(e) {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const bodyFat = parseFloat(document.getElementById('body_fat_percentage').value);
+    const muscleMass = parseFloat(document.getElementById('muscle_mass').value);
+    
+    if (weight < 20 || weight > 300) {
+        e.preventDefault();
+        alert('몸무게는 20kg에서 300kg 사이로 입력해주세요.');
+        return;
+    }
+    
+    if (bodyFat && (bodyFat < 3 || bodyFat > 50)) {
+        e.preventDefault();
+        alert('체지방률은 3%에서 50% 사이로 입력해주세요.');
+        return;
+    }
+    
+    if (muscleMass && (muscleMass < 10 || muscleMass > 100)) {
+        e.preventDefault();
+        alert('근육량은 10kg에서 100kg 사이로 입력해주세요.');
+        return;
+    }
+    
+    if (muscleMass && muscleMass >= weight) {
+        e.preventDefault();
+        alert('근육량은 몸무게보다 작아야 합니다.');
+        return;
+    }
+});
+
+// 실시간 검증
+document.getElementById('weight').addEventListener('input', function() {
+    const value = parseFloat(this.value);
+    if (value < 20 || value > 300) {
+        this.setCustomValidity('몸무게는 20kg에서 300kg 사이로 입력해주세요.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('body_fat_percentage').addEventListener('input', function() {
+    const value = parseFloat(this.value);
+    if (value && (value < 3 || value > 50)) {
+        this.setCustomValidity('체지방률은 3%에서 50% 사이로 입력해주세요.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('muscle_mass').addEventListener('input', function() {
+    const value = parseFloat(this.value);
+    const weight = parseFloat(document.getElementById('weight').value);
+    
+    if (value && (value < 10 || value > 100)) {
+        this.setCustomValidity('근육량은 10kg에서 100kg 사이로 입력해주세요.');
+    } else if (value && weight && value >= weight) {
+        this.setCustomValidity('근육량은 몸무게보다 작아야 합니다.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}

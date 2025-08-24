@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}운동 기록 수정 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-pencil-square"></i> 운동 기록 수정</h2>
+        <a href="{{ url_for('workouts') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+    </div>
+
+    <form method="POST">
+        <div class="row">
+            <!-- 기본 정보 -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> 기본 정보</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="date" class="form-label">운동 날짜</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ session.date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="duration" class="form-label">총 운동 시간 (분)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" 
+                                   value="{{ session.total_duration or '' }}" min="0">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">메모</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ session.notes or '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 운동 종목 템플릿 -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lightning"></i> 빠른 추가</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="loadTemplate('chest')">
+                                    가슴 운동
+                                </button>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="loadTemplate('leg')">
+                                    하체 운동
+                                </button>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <button type="button" class="btn btn-outline-warning btn-sm w-100" onclick="loadTemplate('core')">
+                                    코어 운동
+                                </button>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="loadTemplate('cardio')">
+                                    유산소 운동
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 운동 기록 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> 운동 기록</h5>
+                <button type="button" class="btn btn-primary btn-sm" onclick="addExerciseRow()">
+                    <i class="bi bi-plus"></i> 운동 추가
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="exercise-container">
+                    {% for record in session.records %}
+                    <div class="exercise-row border rounded p-3 mb-3">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">운동 종목</label>
+                                <select class="form-select exercise-select" name="exercise_id" onchange="updateFieldsForExercise(this)">
+                                    <option value="">선택하세요</option>
+                                    {% for exercise in exercises %}
+                                    <option value="{{ exercise.id }}" 
+                                            data-body-part="{{ exercise.body_part }}"
+                                            data-name="{{ exercise.name }}"
+                                            {% if record.exercise_id == exercise.id %}selected{% endif %}>
+                                        {{ exercise.name }} ({{ exercise.body_part }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-1 mb-2">
+                                <label class="form-label">세트</label>
+                                <input type="number" class="form-control" name="sets" value="{{ record.sets or '' }}" min="0">
+                            </div>
+                            
+                            <div class="col-md-1 mb-2">
+                                <label class="form-label">횟수</label>
+                                <input type="number" class="form-control" name="reps" value="{{ record.reps or '' }}" min="0">
+                            </div>
+                            
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label">무게 (kg)</label>
+                                <input type="number" class="form-control" name="weight" value="{{ record.weight or '' }}" min="0" step="0.1">
+                            </div>
+                            
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label">시간 (분)</label>
+                                <input type="number" class="form-control" name="exercise_duration" value="{{ record.duration or '' }}" min="0">
+                            </div>
+                            
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label">거리 (km)</label>
+                                <input type="number" class="form-control" name="distance" value="{{ record.distance or '' }}" min="0" step="0.1">
+                            </div>
+                            
+                            <div class="col-md-1 mb-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeExerciseRow(this)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('workouts') }}" class="btn btn-secondary">
+                <i class="bi bi-x"></i> 취소
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check"></i> 수정 완료
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 운동 종목별 필드 표시/숨김 처리
+function updateFieldsForExercise(selectElement) {
+    const row = selectElement.closest('.exercise-row');
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const bodyPart = selectedOption.getAttribute('data-body-part');
+    const exerciseName = selectedOption.getAttribute('data-name');
+    
+    const setsField = row.querySelector('input[name="sets"]');
+    const repsField = row.querySelector('input[name="reps"]');
+    const weightField = row.querySelector('input[name="weight"]');
+    const durationField = row.querySelector('input[name="exercise_duration"]');
+    const distanceField = row.querySelector('input[name="distance"]');
+    
+    // 모든 필드 숨기기
+    setsField.closest('.col-md-1').style.display = 'none';
+    repsField.closest('.col-md-1').style.display = 'none';
+    weightField.closest('.col-md-2').style.display = 'none';
+    durationField.closest('.col-md-2').style.display = 'none';
+    distanceField.closest('.col-md-2').style.display = 'none';
+    
+    if (bodyPart === '유산소' || exerciseName === '만보걷기' || exerciseName === '실내자전거') {
+        durationField.closest('.col-md-2').style.display = 'block';
+        distanceField.closest('.col-md-2').style.display = 'block';
+        durationField.placeholder = '운동 시간 (분)';
+        distanceField.placeholder = exerciseName === '만보걷기' ? '걸은 거리 (km)' : '자전거 거리 (km)';
+    } else if (exerciseName === '플랭크') {
+        repsField.closest('.col-md-1').style.display = 'block';
+        durationField.closest('.col-md-2').style.display = 'block';
+        repsField.placeholder = '플랭크 시간 (초)';
+        durationField.placeholder = '총 운동 시간 (분)';
+        repsField.previousElementSibling.textContent = '시간(초)';
+    } else if (exerciseName === '팔굽혀펴기' || exerciseName === '스쿼트') {
+        setsField.closest('.col-md-1').style.display = 'block';
+        repsField.closest('.col-md-1').style.display = 'block';
+        setsField.placeholder = '세트 수';
+        repsField.placeholder = '횟수';
+        repsField.previousElementSibling.textContent = '횟수';
+    } else {
+        setsField.closest('.col-md-1').style.display = 'block';
+        repsField.closest('.col-md-1').style.display = 'block';
+        weightField.closest('.col-md-2').style.display = 'block';
+        durationField.closest('.col-md-2').style.display = 'block';
+        setsField.placeholder = '세트 수';
+        repsField.placeholder = '횟수';
+        weightField.placeholder = '무게 (kg)';
+        durationField.placeholder = '운동 시간 (분)';
+        repsField.previousElementSibling.textContent = '횟수';
+    }
+}
+
+// 운동 행 추가
+function addExerciseRow() {
+    const container = document.getElementById('exercise-container');
+    const exerciseRow = document.createElement('div');
+    exerciseRow.className = 'exercise-row border rounded p-3 mb-3';
+    
+    exerciseRow.innerHTML = `
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <label class="form-label">운동 종목</label>
+                <select class="form-select exercise-select" name="exercise_id" onchange="updateFieldsForExercise(this)">
+                    <option value="">선택하세요</option>
+                    {% for exercise in exercises %}
+                    <option value="{{ exercise.id }}" 
+                            data-body-part="{{ exercise.body_part }}"
+                            data-name="{{ exercise.name }}">
+                        {{ exercise.name }} ({{ exercise.body_part }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-1 mb-2">
+                <label class="form-label">세트</label>
+                <input type="number" class="form-control" name="sets" min="0">
+            </div>
+            
+            <div class="col-md-1 mb-2">
+                <label class="form-label">횟수</label>
+                <input type="number" class="form-control" name="reps" min="0">
+            </div>
+            
+            <div class="col-md-2 mb-2">
+                <label class="form-label">무게 (kg)</label>
+                <input type="number" class="form-control" name="weight" min="0" step="0.1">
+            </div>
+            
+            <div class="col-md-2 mb-2">
+                <label class="form-label">시간 (분)</label>
+                <input type="number" class="form-control" name="exercise_duration" min="0">
+            </div>
+            
+            <div class="col-md-2 mb-2">
+                <label class="form-label">거리 (km)</label>
+                <input type="number" class="form-control" name="distance" min="0" step="0.1">
+            </div>
+            
+            <div class="col-md-1 mb-2 d-flex align-items-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeExerciseRow(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(exerciseRow);
+}
+
+// 운동 행 제거
+function removeExerciseRow(button) {
+    button.closest('.exercise-row').remove();
+}
+
+// 템플릿 로드
+function loadTemplate(type) {
+    addExerciseRow();
+    const newRow = document.querySelector('.exercise-row:last-child');
+    const select = newRow.querySelector('.exercise-select');
+    
+    let exerciseId = '';
+    {% for exercise in exercises %}
+    if (type === 'chest' && '{{ exercise.body_part }}' === '가슴') {
+        exerciseId = '{{ exercise.id }}';
+    } else if (type === 'leg' && '{{ exercise.body_part }}' === '하체') {
+        exerciseId = '{{ exercise.id }}';
+    } else if (type === 'core' && '{{ exercise.body_part }}' === '코어') {
+        exerciseId = '{{ exercise.id }}';
+    } else if (type === 'cardio' && '{{ exercise.body_part }}' === '유산소') {
+        exerciseId = '{{ exercise.id }}';
+    }
+    {% endfor %}
+    
+    if (exerciseId) {
+        select.value = exerciseId;
+        updateFieldsForExercise(select);
+    }
+}
+
+// 페이지 로드 시 기존 운동들의 필드 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.exercise-select').forEach(select => {
+        if (select.value) {
+            updateFieldsForExercise(select);
+        }
+    });
+});
+</script>
+{% endblock %}

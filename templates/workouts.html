@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}운동 기록 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-calendar-check"></i> 운동 기록</h2>
+    <a href="{{ url_for('add_workout') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 새 운동 기록
+    </a>
+</div>
+
+{% if sessions %}
+<div class="row">
+    {% for session in sessions %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-event"></i> 
+                        {{ session.date.strftime('%m월 %d일') }}
+                    </h5>
+                    <span class="badge bg-primary">
+                        {{ session.date.strftime('%A') }}
+                    </span>
+                </div>
+
+                {% if session.total_duration %}
+                <div class="mb-2">
+                    <i class="bi bi-stopwatch text-success"></i>
+                    <span class="text-muted">총 {{ session.total_duration }}분</span>
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">운동 내용:</h6>
+                    {% for record in session.records %}
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small">{{ record.exercise.name }}</span>
+                        <span class="small text-muted">
+                            {% if record.exercise.body_part == '유산소' %}
+                                {% if record.duration %}{{ record.duration }}분{% endif %}
+                                {% if record.distance %} / {{ record.distance }}km{% endif %}
+                            {% elif record.exercise.name == '플랭크' %}
+                                {% if record.reps %}{{ record.reps }}초{% endif %}
+                                {% if record.duration %} × {{ record.duration }}분{% endif %}
+                            {% elif record.exercise.name in ['팔굽혀펴기', '스쿼트'] %}
+                                {{ record.sets }}세트 × {{ record.reps }}회
+                            {% else %}
+                                {{ record.sets }}세트 × {{ record.reps }}회
+                                {% if record.weight %} ({{ record.weight }}kg){% endif %}
+                                {% if record.duration %} / {{ record.duration }}분{% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if session.notes %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">메모:</h6>
+                    <p class="small text-muted">{{ session.notes }}</p>
+                </div>
+                {% endif %}
+
+                <div class="text-end">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" 
+                                data-bs-target="#sessionModal{{ session.id }}">
+                            <i class="bi bi-eye"></i> 상세보기
+                        </button>
+                        <a href="{{ url_for('edit_workout', id=session.id) }}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil"></i> 수정
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteWorkout({{ session.id }})">
+                            <i class="bi bi-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 보기 모달 -->
+    <div class="modal fade" id="sessionModal{{ session.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{ session.date.strftime('%Y년 %m월 %d일') }} 운동 기록
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>운동 날짜:</strong> {{ session.date.strftime('%Y년 %m월 %d일 %A') }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>총 운동 시간:</strong> {{ session.total_duration or 0 }}분
+                        </div>
+                    </div>
+
+                    <h6>운동 상세 기록:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>운동명</th>
+                                    <th>세트</th>
+                                    <th>횟수</th>
+                                    <th>무게</th>
+                                    <th>시간</th>
+                                    <th>거리</th>
+                                    <th>부위</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in session.records %}
+                                <tr>
+                                    <td>{{ record.exercise.name }}</td>
+                                    <td>
+                                        {% if record.exercise.name == '플랭크' or record.exercise.body_part == '유산소' %}
+                                            <span class="text-muted">-</span>
+                                        {% else %}
+                                            {{ record.sets }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.exercise.name == '플랭크' %}
+                                            {{ record.reps }}초
+                                        {% elif record.exercise.body_part == '유산소' %}
+                                            <span class="text-muted">-</span>
+                                        {% else %}
+                                            {{ record.reps }}회
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.exercise.name in ['플랭크', '팔굽혀펴기', '스쿼트'] or record.exercise.body_part == '유산소' %}
+                                            <span class="text-muted">-</span>
+                                        {% elif record.weight %}
+                                            {{ record.weight }}kg
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.exercise.name in ['팔굽혀펴기', '스쿼트'] %}
+                                            <span class="text-muted">-</span>
+                                        {% elif record.duration %}
+                                            {{ record.duration }}분
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.distance %}
+                                            {{ record.distance }}km
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ record.exercise.body_part }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if session.notes %}
+                    <h6 class="mt-3">메모:</h6>
+                    <p class="text-muted">{{ session.notes }}</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 페이지네이션 (향후 추가) -->
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="운동 기록 페이지네이션">
+        <!-- 페이지네이션 버튼들이 들어갈 자리 -->
+    </nav>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+    <h4 class="text-muted mt-3">운동 기록이 없습니다</h4>
+    <p class="text-muted">첫 번째 운동을 기록해보세요!</p>
+    <a href="{{ url_for('add_workout') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 첫 운동 기록하기
+    </a>
+</div>
+{% endif %}
+
+<!-- 필터 및 정렬 옵션 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-funnel"></i> 필터 및 정렬</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">기간</label>
+                        <select class="form-select form-select-sm">
+                            <option>전체</option>
+                            <option>최근 7일</option>
+                            <option>최근 30일</option>
+                            <option>이번 달</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">운동 부위</label>
+                        <select class="form-select form-select-sm">
+                            <option>전체</option>
+                            <option>가슴</option>
+                            <option>등</option>
+                            <option>하체</option>
+                            <option>어깨</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">정렬</label>
+                        <select class="form-select form-select-sm">
+                            <option>최신순</option>
+                            <option>과거순</option>
+                            <option>운동시간순</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-outline-primary btn-sm w-100">
+                            <i class="bi bi-search"></i> 적용
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function deleteWorkout(sessionId) {
+    if (confirm('정말로 이 운동 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.')) {
+        window.location.href = `/workouts/delete/${sessionId}`;
+    }
+}
+</script>
+{% endblock %}

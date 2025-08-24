@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-graph-up"></i> 운동 통계 대시보드</h2>
+    <div class="btn-group" role="group">
+        <input type="radio" class="btn-check" name="period" id="week" checked>
+        <label class="btn btn-outline-primary" for="week">주간</label>
+        
+        <input type="radio" class="btn-check" name="period" id="month">
+        <label class="btn btn-outline-primary" for="month">월간</label>
+        
+        <input type="radio" class="btn-check" name="period" id="year">
+        <label class="btn btn-outline-primary" for="year">연간</label>
+    </div>
+</div>
+
+<!-- 통계 카드들 -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">이번 주 운동</h6>
+                        <h2 class="mb-0 text-primary">{{ weekly_sessions }}회</h2>
+                    </div>
+                    <div class="text-primary">
+                        <i class="bi bi-calendar-week fs-1"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i> 이번 주 진행률
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">이번 달 운동</h6>
+                        <h2 class="mb-0 text-success">{{ monthly_sessions }}회</h2>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-calendar-month fs-1"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i> 이번 달 진행률
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">총 운동 시간</h6>
+                        <h2 class="mb-0 text-info">{{ total_duration }}분</h2>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-stopwatch fs-1"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i> 총 운동 시간
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm stats-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">운동 연속일</h6>
+                        <h2 class="mb-0 text-warning">{{ consecutive_days }}일</h2>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-fire fs-1"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-trophy"></i> {% if consecutive_days >= 7 %}개인 기록!{% else %}진행 중{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 차트 섹션 -->
+<div class="row mb-4">
+    <!-- 주간 운동 빈도 차트 -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> 주간 운동 빈도</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 운동 부위별 분포 -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> 부위별 운동 분포</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="bodyPartChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 운동 진행률 및 목표 -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-target"></i> 이번 달 목표 진행률</h5>
+            </div>
+            <div class="card-body">
+                {% if goal_progress %}
+                    {% if goal_progress.get('weekly_workouts') is not none %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>주 3회 운동</span>
+                            <span>{{ goal_progress.weekly_workouts }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ goal_progress.weekly_workouts }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if goal_progress.get('monthly_duration') is not none %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>월 운동 시간</span>
+                            <span>{{ goal_progress.monthly_duration }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: {{ goal_progress.monthly_duration }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if goal_progress.get('weight_loss') is not none %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>체중 감량</span>
+                            <span>{{ goal_progress.weight_loss }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: {{ goal_progress.weight_loss }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-target fs-1"></i>
+                        <p class="mt-2">설정된 목표가 없습니다.</p>
+                        <a href="{{ url_for('add_goal') }}" class="btn btn-primary btn-sm">목표 설정하기</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> 최근 성과</h5>
+            </div>
+            <div class="card-body">
+                {% if achievements %}
+                    <div class="list-group list-group-flush">
+                        {% for achievement in achievements[:3] %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <i class="bi {{ achievement.icon }} {{ achievement.color }} me-2"></i>
+                            <div>
+                                <div class="fw-bold">{{ achievement.title }}</div>
+                                <small class="text-muted">
+                                    {% if achievement.days_ago == 0 %}
+                                        오늘
+                                    {% elif achievement.days_ago == 1 %}
+                                        1일 전
+                                    {% else %}
+                                        {{ achievement.days_ago }}일 전
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-trophy fs-1"></i>
+                        <p class="mt-2">아직 달성한 성과가 없습니다.</p>
+                        <small>운동을 시작하면 성과가 표시됩니다!</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 운동 패턴 분석 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-heat"></i> 운동 히트맵 (최근 3개월)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="heatmapChart"></canvas>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <span class="me-3"><span class="badge bg-light text-dark">0</span> 휴식</span>
+                        <span class="me-3"><span class="badge bg-primary">1-2</span> 가벼운 운동</span>
+                        <span class="me-3"><span class="badge bg-warning">3-4</span> 보통 운동</span>
+                        <span><span class="badge bg-danger">5+</span> 강도 높은 운동</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 주간 운동 빈도 차트
+fetch('/api/chart-data')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: '운동 시간 (분)',
+                    data: data.data,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+
+// 부위별 운동 분포 차트
+fetch('/api/body-part-data')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('bodyPartChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#f5576c',
+                        '#4facfe',
+                        '#00f2fe',
+                        '#43e97b',
+                        '#38f9d7'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+
+// 히트맵 차트 (실제 데이터)
+const heatmapCtx = document.getElementById('heatmapChart').getContext('2d');
+
+// 서버에서 받은 히트맵 데이터를 JavaScript로 전달
+const heatmapData = {{ heatmap_data | tojson }};
+
+// 히트맵 데이터를 차트 형식으로 변환
+const chartData = heatmapData.map((item, index) => ({
+    x: item.date.split('-')[2] % 7, // 요일 (0-6)
+    y: Math.floor(index / 7), // 주차
+    v: item.intensity // 운동 강도
+}));
+
+new Chart(heatmapCtx, {
+    type: 'scatter',
+    data: {
+        datasets: [{
+            label: '운동 강도',
+            data: chartData,
+            backgroundColor: function(context) {
+                const value = context.parsed.v;
+                if (value === 0) return '#f8f9fa'; // 휴식
+                if (value <= 2) return '#667eea'; // 가벼운 운동
+                if (value <= 4) return '#ffc107'; // 보통 운동
+                return '#dc3545'; // 강도 높은 운동
+            },
+            pointRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'linear',
+                position: 'bottom',
+                min: 0,
+                max: 6,
+                ticks: {
+                    callback: function(value) {
+                        const days = ['일', '월', '화', '수', '목', '금', '토'];
+                        return days[value];
+                    }
+                }
+            },
+            y: {
+                type: 'linear',
+                min: 0,
+                max: 12
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    title: function(context) {
+                        const dataPoint = context[0];
+                        const intensity = dataPoint.parsed.v;
+                        let intensityText = '휴식';
+                        if (intensity > 0 && intensity <= 2) intensityText = '가벼운 운동';
+                        else if (intensity > 2 && intensity <= 4) intensityText = '보통 운동';
+                        else if (intensity > 4) intensityText = '강도 높은 운동';
+                        return intensityText;
+                    },
+                    label: function(context) {
+                        return `운동 강도: ${context.parsed.v}`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 기간 변경 이벤트
+document.querySelectorAll('input[name="period"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        // 여기서 AJAX로 새로운 데이터를 가져와서 차트 업데이트
+        console.log('기간 변경:', this.id);
+    });
+});
+</script>
+{% endblock %}

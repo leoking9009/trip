@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}운동 종목 관리 - 운동 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-list-task"></i> 운동 종목 관리</h2>
+    <a href="{{ url_for('add_exercise') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 새 운동 추가
+    </a>
+</div>
+
+<div class="row">
+    {% if exercises %}
+        {% for exercise in exercises %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ exercise.name }}</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('edit_exercise', id=exercise.id) }}">
+                                        <i class="bi bi-pencil"></i> 수정
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('delete_exercise', id=exercise.id) }}" 
+                                       onclick="return confirm('정말 삭제하시겠습니까?')">
+                                        <i class="bi bi-trash"></i> 삭제
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">
+                            <i class="bi bi-person"></i> {{ exercise.body_part }}
+                        </span>
+                        <span class="badge 
+                            {% if exercise.difficulty == '초급' %}bg-success
+                            {% elif exercise.difficulty == '중급' %}bg-warning
+                            {% else %}bg-danger{% endif %}">
+                            <i class="bi bi-star"></i> {{ exercise.difficulty }}
+                        </span>
+                    </div>
+                    
+                    {% if exercise.description %}
+                    <p class="card-text text-muted small">{{ exercise.description }}</p>
+                    {% endif %}
+                    
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar"></i> {{ exercise.created_at.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">등록된 운동 종목이 없습니다</h4>
+                <p class="text-muted">새로운 운동 종목을 추가해보세요!</p>
+                <a href="{{ url_for('add_exercise') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> 첫 운동 종목 추가
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- 운동 부위별 필터 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-funnel"></i> 운동 부위별 분류</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% set body_parts = exercises|groupby('body_part') %}
+                    {% for body_part, group in body_parts %}
+                    <div class="col-md-2 mb-3">
+                        <div class="text-center">
+                            <div class="badge bg-light text-dark border p-2 w-100">
+                                <div class="fw-bold">{{ body_part }}</div>
+                                <div class="small">{{ group|list|length }}개</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
