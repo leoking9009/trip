@@ -35,3 +35,6 @@ if __name__ == '__main__':
     print(f"환경: {config_name}")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
+
+
+

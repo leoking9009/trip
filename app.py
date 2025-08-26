@@ -253,6 +253,14 @@ def delete_workout(id):
     flash('운동 기록이 삭제되었습니다!', 'success')
     return redirect(url_for('workouts'))
 
+@app.route('/workouts/delete_all')
+def delete_all_workouts():
+    WorkoutRecord.query.delete()
+    WorkoutSession.query.delete()
+    db.session.commit()
+    flash('모든 운동 기록이 삭제되었습니다!', 'success')
+    return redirect(url_for('workouts'))
+
 @app.route('/dashboard')
 def dashboard():
     # 통계 데이터 계산
